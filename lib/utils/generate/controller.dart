@@ -1,20 +1,25 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:base32/base32.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:otp/otp.dart';
-import 'dart:async';
-import 'package:get_storage/get_storage.dart';
 
 class GenerateController extends GetxController {
   var totpList = <Map<String, dynamic>>[].obs;
   Timer? timer;
-  final box = GetStorage();
+  final _secureStorage = const FlutterSecureStorage();
   var progress = 0.0.obs;
   var remainingSeconds = 30.obs;
 
   @override
   void onInit() {
     super.onInit();
-    loadList();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await loadList();
     if (totpList.isNotEmpty) {
       startTimer();
     }
@@ -27,9 +32,9 @@ class GenerateController extends GetxController {
     super.onClose();
   }
 
-  bool add(String accountName, String secret, String algorithm, String length,
-      String mode,
-      {String? oldSecret}) {
+  Future<bool> add(String accountName, String secret, String algorithm,
+      String length, String mode,
+      {String? oldSecret}) async {
     int index = -1;
     if (oldSecret != null) {
       index = totpList.indexWhere((element) => element['secret'] == oldSecret);
@@ -60,7 +65,7 @@ class GenerateController extends GetxController {
           startTimer();
         }
       }
-      saveList();
+      await saveList();
       refreshList();
       return true;
     } else {
@@ -68,9 +73,9 @@ class GenerateController extends GetxController {
     }
   }
 
-  void delete(int index) {
+  Future<void> delete(int index) async {
     totpList.removeAt(index);
-    saveList();
+    await saveList();
     if (totpList.isEmpty) {
       stopTimer();
     }
@@ -106,13 +111,15 @@ class GenerateController extends GetxController {
         algorithm: algo, isGoogle: true, length: int.parse(length));
   }
 
-  void saveList() {
-    box.write('totpList', totpList.toList());
+  Future<void> saveList() async {
+    final jsonString = jsonEncode(totpList.toList());
+    await _secureStorage.write(key: 'totpList', value: jsonString);
   }
 
-  void loadList() {
-    List<dynamic>? storedList = box.read('totpList');
-    if (storedList != null) {
+  Future<void> loadList() async {
+    final jsonString = await _secureStorage.read(key: 'totpList');
+    if (jsonString != null) {
+      final List<dynamic> storedList = jsonDecode(jsonString);
       totpList.assignAll(
           storedList.map((e) => Map<String, dynamic>.from(e)).toList());
     }

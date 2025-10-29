@@ -57,15 +57,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get are_you_sure => 'Вы уверены, что хотите удалить данные? Восстановление будет невозможно.';
 
   @override
-  String get cancel => 'Отмена';
-
-  @override
-  String get delete => 'Удалить';
-
-  @override
-  String get save => 'Сохранить';
-
-  @override
   String get edit => 'Редактировать';
 
   @override
@@ -94,9 +85,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get failed_to_add => 'Ошибка добавления. Проверьте параметры и повторите.';
-
-  @override
-  String get ok => 'OK';
 
   @override
   String get result => 'Результат';
@@ -187,4 +175,13 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get import_warning => 'Эта операция приведет к перезаписи текущих данных и поддерживается только для файлов, экспортированных из VerifyMe. Продолжить?';
+
+  @override
+  String get general => 'Общие';
+
+  @override
+  String get data => 'Данные';
+
+  @override
+  String get details => 'Детали';
 }

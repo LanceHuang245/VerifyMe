@@ -16,9 +16,6 @@
   "import_json": "Importar desde JSON",
   "confirm": "Confirmar",
   "are_you_sure": "¿Estás seguro de que deseas eliminar los datos? No se podrán recuperar después de la eliminación.",
-  "cancel": "Cancelar",
-  "delete": "Eliminar",
-  "save": "Guardar",
   "edit": "Editar",
   "input": "Entrada",
   "mode": "Modo",
@@ -29,7 +26,6 @@
   "length": "Longitud",
   "error": "Error",
   "failed_to_add": "Error al agregar. Verifica los parámetros e inténtalo de nuevo.",
-  "ok": "Aceptar",
   "result": "Resultado",
   "issuer": "Emisor",
   "no_storage_permission": "Sin permiso de almacenamiento",
@@ -59,5 +55,8 @@
   "webdav_input_address": "Por favor, ingrese la dirección WebDAV",
   "webdav_reboot_tip": "Reiniciar la aplicación",
   "add": "Agregar",
-  "import_warning": "Esta operación sobrescribirá los datos actuales y solo es compatible con archivos exportados desde VerifyMe. ¿Desea continuar?"
+  "import_warning": "Esta operación sobrescribirá los datos actuales y solo es compatible con archivos exportados desde VerifyMe. ¿Desea continuar?",
+  "general": "General",
+  "data": "Datos",
+  "details": "Detalles"
 }

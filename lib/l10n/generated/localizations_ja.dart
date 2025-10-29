@@ -57,15 +57,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get are_you_sure => 'データを削除してもよろしいですか？削除後は復元できません。';
 
   @override
-  String get cancel => 'キャンセル';
-
-  @override
-  String get delete => '削除';
-
-  @override
-  String get save => '保存';
-
-  @override
   String get edit => '編集';
 
   @override
@@ -94,9 +85,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get failed_to_add => '追加に失敗しました。パラメータを確認してもう一度お試しください。';
-
-  @override
-  String get ok => 'OK';
 
   @override
   String get result => 'スキャン結果';
@@ -187,4 +175,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get import_warning => 'この操作は現在のデータを上書きします。また、VerifyMeでエクスポートされたファイルのみが対象です。続行しますか？';
+
+  @override
+  String get general => '一般';
+
+  @override
+  String get data => 'データ';
+
+  @override
+  String get details => '詳細';
 }

@@ -27,6 +27,7 @@ dependencies:
   intl: 
   flutter_colorpicker: 
   webdav_client: 
+  flutter_secure_storage: 
   
 dev_dependencies:
   flutter_test:

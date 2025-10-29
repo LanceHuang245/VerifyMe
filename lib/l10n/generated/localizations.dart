@@ -204,24 +204,6 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to delete the data? It is not recoverable after deletion.'**
   String get are_you_sure;
 
-  /// No description provided for @cancel.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel'**
-  String get cancel;
-
-  /// No description provided for @delete.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete'**
-  String get delete;
-
-  /// No description provided for @save.
-  ///
-  /// In en, this message translates to:
-  /// **'Save'**
-  String get save;
-
   /// No description provided for @edit.
   ///
   /// In en, this message translates to:
@@ -281,12 +263,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to add. Please check the parameters and try again.'**
   String get failed_to_add;
-
-  /// No description provided for @ok.
-  ///
-  /// In en, this message translates to:
-  /// **'OK'**
-  String get ok;
 
   /// No description provided for @result.
   ///
@@ -467,6 +443,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This operation will overwrite the current data and only supports files exported by VerifyMe. Do you want to continue?'**
   String get import_warning;
+
+  /// No description provided for @general.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get general;
+
+  /// No description provided for @data.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get data;
+
+  /// No description provided for @details.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get details;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

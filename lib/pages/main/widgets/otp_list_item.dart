@@ -187,7 +187,8 @@ class OtpListItem extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  loc.delete,
+                                  MaterialLocalizations.of(context)
+                                      .deleteButtonTooltip,
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyMedium

@@ -22,512 +22,11 @@ class SettingsState extends State<Settings> {
   final GenerateController totpController = Get.find();
   final GetStorage _box = GetStorage();
   String _themeMode = 'system';
-  bool selectedMonet = true;
+  bool _selectedMonet = true;
   late String _languageCode;
-  Color pickerColor = const Color(0xff443a49);
-  Color currentColor = const Color(0xff443a49);
+  Color _currentColor = const Color(0xff443a49);
 
-  @override
-  void initState() {
-    super.initState();
-    _themeMode = _box.read('themeMode') ?? 'system';
-    _languageCode = _box.read('languageCode') ?? 'en';
-    final int? storedColor = _box.read('colorSeed');
-    if (storedColor != null) {
-      currentColor = Color(storedColor);
-    }
-    if (Platform.isIOS) {
-      selectedMonet = false;
-    } else {
-      selectedMonet = _box.read('monetStatus') ?? true;
-    }
-  }
-
-  // 修改语言
-  void _changeLanguage(String languageCode) async {
-    Locale newLocale;
-    if (languageCode.contains('_')) {
-      final parts = languageCode.split('_');
-      newLocale = Locale(parts[0], parts[1]);
-    } else {
-      newLocale = Locale(languageCode);
-    }
-    Get.updateLocale(newLocale);
-    setState(() {
-      _languageCode = languageCode;
-    });
-    _box.write('languageCode', languageCode);
-  }
-
-  // 保存主题
-  void _saveThemeMode(String themeMode) {
-    setState(() {
-      _themeMode = themeMode;
-    });
-    _box.write('themeMode', themeMode);
-    Get.changeThemeMode(
-      themeMode == 'system'
-          ? ThemeMode.system
-          : themeMode == 'light'
-              ? ThemeMode.light
-              : ThemeMode.dark,
-    );
-  }
-
-  // 莫奈取色开关
-  void onMonet(bool? value) {
-    if (value == null) return;
-    setState(() {
-      selectedMonet = value;
-    });
-    _box.write('monetStatus', value);
-    final msg = AppLocalizations.of(context).effective_after_reboot;
-    showNotification(msg);
-  }
-
-  // 导出数据
-  Future<void> export() async {
-    if (await _requestPermission()) {
-      exportList();
-    } else {
-      showNotification(AppLocalizations.of(context).no_storage_permission);
-    }
-  }
-
-  // 导出TotpList
-  Future<void> exportList() async {
-    try {
-      final directory = await _getDirectory();
-      final file = File('${directory.path}/totp_list.json');
-      final jsonString = jsonEncode(totpController.totpList);
-      await file.writeAsString(jsonString);
-      showNotification(
-          '${AppLocalizations.of(context).export_to} ${file.path}');
-    } catch (e) {
-      showNotification(
-          '${AppLocalizations.of(context).failed_to_export_data}: $e');
-    }
-  }
-
-  // 获取目录
-  Future<Directory> _getDirectory() async {
-    if (Platform.isAndroid) {
-      return Directory('/storage/emulated/0/Download');
-    } else if (Platform.isIOS) {
-      return await getApplicationDocumentsDirectory();
-    }
-    showNotification(AppLocalizations.of(context).unsupported_platform);
-    throw UnsupportedError('Unsupported platform');
-  }
-
-  // 请求权限
-  Future<bool> _requestPermission() async {
-    if (Platform.isAndroid) {
-      return await Permission.manageExternalStorage.request().isGranted;
-    } else if (Platform.isIOS) {
-      return await Permission.storage.request().isGranted;
-    }
-    return false;
-  }
-
-  // 更换颜色
-  void changeColor(Color color) {
-    setState(() => pickerColor = color);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
-    final bool isEnabled = !Platform.isIOS;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(loc.settings),
-      ),
-      backgroundColor: Theme.of(context).colorScheme.onInverseSurface,
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const SizedBox(height: 16),
-          ThemeModeSelectorWidget(
-            themeMode: _themeMode,
-            dynamicColorEnabled: selectedMonet,
-            onThemeModeChanged: _saveThemeMode,
-            onDynamicColorChanged: onMonet,
-            isEnabled: isEnabled,
-            currentColor: currentColor,
-            onCustomColor: (color) {
-              setState(() => currentColor = color);
-              _box.write('colorSeed', currentColor.toARGB32);
-            },
-          ),
-          const SizedBox(height: 16),
-          // Monet取色开关
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(24),
-                onTap: () => onMonet(!selectedMonet),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(Icons.color_lens,
-                          color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(loc.monet_color,
-                                style: Theme.of(context).textTheme.titleMedium),
-                            const SizedBox(height: 4),
-                            Text(loc.effective_after_reboot,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(color: Colors.grey)),
-                          ],
-                        ),
-                      ),
-                      Switch(
-                        value: selectedMonet,
-                        onChanged: isEnabled ? onMonet : null,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // 自定义颜色
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(24),
-                onTap: selectedMonet
-                    ? null
-                    : () {
-                        showColorPickerDialog(context, currentColor, (color) {
-                          setState(() => currentColor = color);
-                          _box.write('colorSeed', currentColor.toARGB32());
-                        });
-                      },
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(Icons.color_lens_outlined,
-                          color: selectedMonet
-                              ? Colors.grey
-                              : Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(loc.custom_color,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                        color: selectedMonet
-                                            ? Colors.grey
-                                            : null)),
-                            const SizedBox(height: 4),
-                            Text(loc.effective_after_reboot,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(color: Colors.grey)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          LanguageSelectorWidget(
-            languageCode: _languageCode,
-            onLanguageChanged: _changeLanguage,
-          ),
-          const SizedBox(height: 16),
-          // WebDAV
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(24),
-                onTap: () {
-                  Get.to(() => const WebDavSettingsPage());
-                },
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                  child: Row(
-                    children: [
-                      Icon(Icons.cloud_upload,
-                          color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 8),
-                      Expanded(
-                          child: Text(loc.webdav_title,
-                              style: Theme.of(context).textTheme.titleMedium)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // 导出
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(24),
-                onTap: totpController.totpList.isNotEmpty ? export : null,
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                  child: Row(
-                    children: [
-                      Icon(Icons.upload,
-                          color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 8),
-                      Expanded(
-                          child: Text(loc.export_data,
-                              style: Theme.of(context).textTheme.titleMedium)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // 关于
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(24),
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return buildAboutDialog();
-                    },
-                  );
-                },
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline,
-                          color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 8),
-                      Expanded(
-                          child: Text(loc.about,
-                              style: Theme.of(context).textTheme.titleMedium)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ThemeModeSelectorWidget 只保留主题模式选择相关内容，不再包含Monet和自定义颜色
-class ThemeModeSelectorWidget extends StatefulWidget {
-  final String themeMode;
-  final bool dynamicColorEnabled;
-  final ValueChanged<String> onThemeModeChanged;
-  final ValueChanged<bool?> onDynamicColorChanged;
-  final bool isEnabled;
-  final Color currentColor;
-  final ValueChanged<Color> onCustomColor;
-  const ThemeModeSelectorWidget({
-    super.key,
-    required this.themeMode,
-    required this.dynamicColorEnabled,
-    required this.onThemeModeChanged,
-    required this.onDynamicColorChanged,
-    required this.isEnabled,
-    required this.currentColor,
-    required this.onCustomColor,
-  });
-  @override
-  State<ThemeModeSelectorWidget> createState() =>
-      _ThemeModeSelectorWidgetState();
-}
-
-class _ThemeModeSelectorWidgetState extends State<ThemeModeSelectorWidget> {
-  bool _expanded = false;
-  @override
-  Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(24),
-              onTap: () => setState(() => _expanded = !_expanded),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                child: Row(
-                  children: [
-                    Icon(Icons.light_mode, color: colorScheme.primary),
-                    const SizedBox(width: 8),
-                    Text(loc.theme, style: textTheme.titleMedium),
-                    const Spacer(),
-                    Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.linearToEaseOut,
-            child: _expanded
-                ? Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    child: Column(
-                      children: [
-                        Material(
-                          color: Colors.transparent,
-                          child: ListTile(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            leading: const Icon(Icons.brightness_auto),
-                            title: Text(
-                              loc.follow_system,
-                              style: widget.themeMode == 'system'
-                                  ? textTheme.bodyLarge?.copyWith(
-                                      color: colorScheme.primary,
-                                      fontWeight: FontWeight.bold,
-                                    )
-                                  : textTheme.bodyLarge,
-                            ),
-                            trailing: widget.themeMode == 'system'
-                                ? Icon(Icons.check, color: colorScheme.primary)
-                                : null,
-                            onTap: () => widget.onThemeModeChanged('system'),
-                          ),
-                        ),
-                        Material(
-                          color: Colors.transparent,
-                          child: ListTile(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            leading: const Icon(Icons.light_mode),
-                            title: Text(
-                              loc.light,
-                              style: widget.themeMode == 'light'
-                                  ? textTheme.bodyLarge?.copyWith(
-                                      color: colorScheme.primary,
-                                      fontWeight: FontWeight.bold,
-                                    )
-                                  : textTheme.bodyLarge,
-                            ),
-                            trailing: widget.themeMode == 'light'
-                                ? Icon(Icons.check, color: colorScheme.primary)
-                                : null,
-                            onTap: () => widget.onThemeModeChanged('light'),
-                          ),
-                        ),
-                        Material(
-                          color: Colors.transparent,
-                          child: ListTile(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            leading: const Icon(Icons.dark_mode),
-                            title: Text(
-                              loc.dark,
-                              style: widget.themeMode == 'dark'
-                                  ? textTheme.bodyLarge?.copyWith(
-                                      color: colorScheme.primary,
-                                      fontWeight: FontWeight.bold,
-                                    )
-                                  : textTheme.bodyLarge,
-                            ),
-                            trailing: widget.themeMode == 'dark'
-                                ? Icon(Icons.check, color: colorScheme.primary)
-                                : null,
-                            onTap: () => widget.onThemeModeChanged('dark'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// 语言选择
-class LanguageSelectorWidget extends StatefulWidget {
-  final String languageCode;
-  final ValueChanged<String> onLanguageChanged;
-  const LanguageSelectorWidget(
-      {super.key, required this.languageCode, required this.onLanguageChanged});
-  @override
-  State<LanguageSelectorWidget> createState() => _LanguageSelectorWidgetState();
-}
-
-class _LanguageSelectorWidgetState extends State<LanguageSelectorWidget> {
-  bool _expanded = false;
-  final List<Map<String, String>> languages = [
+  final List<Map<String, String>> _languages = [
     {'code': 'de', 'name': 'Deutsch'},
     {'code': 'en', 'name': 'English'},
     {'code': 'es', 'name': 'Español'},
@@ -538,152 +37,290 @@ class _LanguageSelectorWidgetState extends State<LanguageSelectorWidget> {
     {'code': 'zh', 'name': '中文 (简体)'},
     {'code': 'zh_TW', 'name': '中文 (繁体)'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _themeMode = _box.read('themeMode') ?? 'system';
+    _languageCode = _box.read('languageCode') ?? 'en';
+    final int? storedColor = _box.read('colorSeed');
+    if (storedColor != null) {
+      _currentColor = Color(storedColor);
+    }
+    if (Platform.isIOS) {
+      _selectedMonet = false;
+    } else {
+      _selectedMonet = _box.read('monetStatus') ?? true;
+    }
+  }
+
+  void _changeLanguage(String languageCode) {
+    final parts = languageCode.split('_');
+    final locale =
+        parts.length > 1 ? Locale(parts[0], parts[1]) : Locale(parts[0]);
+    Get.updateLocale(locale);
+    setState(() => _languageCode = languageCode);
+    _box.write('languageCode', languageCode);
+  }
+
+  void _saveThemeMode(String themeMode) {
+    setState(() => _themeMode = themeMode);
+    _box.write('themeMode', themeMode);
+    Get.changeThemeMode(
+      themeMode == 'system'
+          ? ThemeMode.system
+          : themeMode == 'light'
+              ? ThemeMode.light
+              : ThemeMode.dark,
+    );
+  }
+
+  void _onMonetChanged(bool? value) {
+    if (value == null || !mounted) return;
+    setState(() => _selectedMonet = value);
+    _box.write('monetStatus', value);
+    showNotification(AppLocalizations.of(context).effective_after_reboot);
+  }
+
+  void _onCustomColorTapped() {
+    if (_selectedMonet) return;
+    showColorPickerDialog(context, _currentColor, (color) {
+      setState(() => _currentColor = color);
+      _box.write('colorSeed', _currentColor.value);
+      showNotification(AppLocalizations.of(context).effective_after_reboot);
+    });
+  }
+
+  Future<void> _exportData() async {
+    if (await _requestPermission()) {
+      try {
+        final directory = await _getDirectory();
+        final file = File('${directory.path}/totp_list.json');
+        final jsonString = jsonEncode(totpController.totpList);
+        await file.writeAsString(jsonString);
+        if (mounted) {
+          showNotification(
+              '${AppLocalizations.of(context).export_to} ${file.path}');
+        }
+      } catch (e) {
+        if (mounted) {
+          showNotification(
+              '${AppLocalizations.of(context).failed_to_export_data}: $e');
+        }
+      }
+    } else {
+      if (mounted) {
+        showNotification(AppLocalizations.of(context).no_storage_permission);
+      }
+    }
+  }
+
+  Future<Directory> _getDirectory() async {
+    if (Platform.isAndroid) {
+      return Directory('/storage/emulated/0/Download');
+    } else if (Platform.isIOS) {
+      return await getApplicationDocumentsDirectory();
+    }
+    throw UnsupportedError('Unsupported platform');
+  }
+
+  Future<bool> _requestPermission() async {
+    if (Platform.isAndroid) {
+      return await Permission.manageExternalStorage.request().isGranted;
+    } else if (Platform.isIOS) {
+      return await Permission.storage.request().isGranted;
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     final loc = AppLocalizations.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(24),
-              onTap: () => setState(() => _expanded = !_expanded),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                child: Row(
-                  children: [
-                    Icon(Icons.language, color: colorScheme.primary),
-                    const SizedBox(width: 8),
-                    Text(loc.language, style: textTheme.titleMedium),
-                    const Spacer(),
-                    Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-                  ],
-                ),
-              ),
+    final theme = Theme.of(context);
+    final bool isPlatformIos = Platform.isIOS;
+
+    return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
+      body: CustomScrollView(
+        slivers: <Widget>[
+          SliverAppBar(
+            title: Text(loc.settings),
+            backgroundColor: theme.colorScheme.surface,
+            pinned: true,
+          ),
+          SliverToBoxAdapter(
+            child: _SettingsGroup(
+              title: loc.theme,
+              children: [
+                _buildThemeSelector(loc, theme),
+                if (!isPlatformIos) _buildMonetSwitch(loc, theme),
+                _buildCustomColorSelector(loc, theme),
+              ],
             ),
           ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.linearToEaseOut,
-            child: _expanded
-                ? Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    child: Column(
-                      children: languages.map((lang) {
-                        final isSelected = lang['code'] == widget.languageCode;
-                        return Material(
-                          color: Colors.transparent,
-                          child: ListTile(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            title: Text(
-                              lang['name']!,
-                              style: isSelected
-                                  ? textTheme.bodyLarge?.copyWith(
-                                      color: colorScheme.primary,
-                                      fontWeight: FontWeight.bold,
-                                    )
-                                  : textTheme.bodyLarge,
-                            ),
-                            trailing: isSelected
-                                ? Icon(Icons.check, color: colorScheme.primary)
-                                : null,
-                            onTap: () {
-                              if (!isSelected) {
-                                widget.onLanguageChanged(lang['code']!);
-                              }
-                            },
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  )
-                : const SizedBox.shrink(),
+          SliverToBoxAdapter(
+            child: _SettingsGroup(
+              title: loc.general,
+              children: [
+                _buildLanguageSelector(loc, theme),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: _SettingsGroup(
+              title: loc.data,
+              children: [
+                ListTile(
+                  title: Text(loc.webdav_title),
+                  leading: const Icon(Icons.cloud_upload_outlined),
+                  onTap: () => Get.to(() => const WebDavSettingsPage()),
+                ),
+                ListTile(
+                  title: Text(loc.export_data),
+                  leading: const Icon(Icons.upload_file_outlined),
+                  enabled: totpController.totpList.isNotEmpty,
+                  onTap: _exportData,
+                ),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: _SettingsGroup(
+              title: loc.about,
+              children: [
+                ListTile(
+                  title: Text(loc.about),
+                  leading: const Icon(Icons.info_outline),
+                  onTap: () => showDialog(
+                    context: context,
+                    builder: (_) => buildAboutDialog(),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
-}
 
-// WebDav设置入口
-class WebDavTile extends StatelessWidget {
-  const WebDavTile({super.key});
-  @override
-  Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
+  Widget _buildThemeSelector(AppLocalizations loc, ThemeData theme) {
+    return ExpansionTile(
+      leading: const Icon(Icons.brightness_6_outlined),
+      title: Text(loc.theme),
+      subtitle: Text(
+        _themeMode == 'system'
+            ? loc.follow_system
+            : _themeMode == 'light'
+                ? loc.light
+                : loc.dark,
       ),
-      child: ListTile(
-        leading: const Icon(Icons.cloud_upload),
-        title: Text(loc.webdav_title),
-        onTap: () {
-          Get.to(() => const WebDavSettingsPage());
-        },
+      children: [
+        RadioListTile<String>(
+          title: Text(loc.follow_system),
+          value: 'system',
+          groupValue: _themeMode,
+          onChanged: (v) => _saveThemeMode(v!),
+        ),
+        RadioListTile<String>(
+          title: Text(loc.light),
+          value: 'light',
+          groupValue: _themeMode,
+          onChanged: (v) => _saveThemeMode(v!),
+        ),
+        RadioListTile<String>(
+          title: Text(loc.dark),
+          value: 'dark',
+          groupValue: _themeMode,
+          onChanged: (v) => _saveThemeMode(v!),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMonetSwitch(AppLocalizations loc, ThemeData theme) {
+    return SwitchListTile(
+      title: Text(loc.monet_color),
+      subtitle: Text(loc.effective_after_reboot),
+      secondary: const Icon(Icons.color_lens_outlined),
+      value: _selectedMonet,
+      onChanged: _onMonetChanged,
+    );
+  }
+
+  Widget _buildCustomColorSelector(AppLocalizations loc, ThemeData theme) {
+    return ListTile(
+      title: Text(loc.custom_color),
+      subtitle: Text(loc.effective_after_reboot),
+      leading: const Icon(Icons.palette_outlined),
+      enabled: !_selectedMonet,
+      onTap: _onCustomColorTapped,
+      trailing: Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          color: _selectedMonet ? theme.disabledColor : _currentColor,
+          shape: BoxShape.circle,
+          border: Border.all(color: theme.dividerColor),
+        ),
       ),
+    );
+  }
+
+  Widget _buildLanguageSelector(AppLocalizations loc, ThemeData theme) {
+    final currentLangName = _languages.firstWhere(
+        (lang) => lang['code'] == _languageCode,
+        orElse: () => {'name': ''})['name'];
+    return ExpansionTile(
+      leading: const Icon(Icons.language_outlined),
+      title: Text(loc.language),
+      subtitle: Text(currentLangName ?? ''),
+      children: _languages.map((lang) {
+        return RadioListTile<String>(
+          title: Text(lang['name']!),
+          value: lang['code']!,
+          groupValue: _languageCode,
+          onChanged: (v) => _changeLanguage(v!),
+        );
+      }).toList(),
     );
   }
 }
 
-// 导出数据
-class ExportTile extends StatelessWidget {
-  final bool enabled;
-  final VoidCallback onExport;
-  const ExportTile({super.key, required this.enabled, required this.onExport});
-  @override
-  Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: ListTile(
-        enabled: enabled,
-        leading: const Icon(Icons.upload),
-        title: Text(loc.export_data),
-        onTap: onExport,
-      ),
-    );
-  }
-}
+class _SettingsGroup extends StatelessWidget {
+  final String title;
+  final List<Widget> children;
 
-// 关于
-class AboutAppTile extends StatelessWidget {
-  const AboutAppTile({super.key});
+  const _SettingsGroup({required this.title, required this.children});
+
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: ListTile(
-        leading: const Icon(Icons.info),
-        title: Text(loc.about),
-        onTap: () {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return buildAboutDialog();
-            },
-          );
-        },
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+            child: Text(
+              title,
+              style: theme.textTheme.titleSmall
+                  ?.copyWith(color: theme.colorScheme.primary),
+            ),
+          ),
+          Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(color: theme.colorScheme.outlineVariant),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: children,
+            ),
+          ),
+        ],
       ),
     );
   }

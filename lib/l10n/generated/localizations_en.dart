@@ -57,15 +57,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get are_you_sure => 'Are you sure you want to delete the data? It is not recoverable after deletion.';
 
   @override
-  String get cancel => 'Cancel';
-
-  @override
-  String get delete => 'Delete';
-
-  @override
-  String get save => 'Save';
-
-  @override
   String get edit => 'Edit';
 
   @override
@@ -94,9 +85,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get failed_to_add => 'Failed to add. Please check the parameters and try again.';
-
-  @override
-  String get ok => 'OK';
 
   @override
   String get result => 'Result';
@@ -187,4 +175,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get import_warning => 'This operation will overwrite the current data and only supports files exported by VerifyMe. Do you want to continue?';
+
+  @override
+  String get general => 'General';
+
+  @override
+  String get data => 'Data';
+
+  @override
+  String get details => 'Details';
 }

@@ -57,15 +57,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get are_you_sure => '您确定要删除数据吗？删除后无法恢复。';
 
   @override
-  String get cancel => '取消';
-
-  @override
-  String get delete => '删除';
-
-  @override
-  String get save => '保存';
-
-  @override
   String get edit => '编辑';
 
   @override
@@ -94,9 +85,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get failed_to_add => '添加失败，请检查参数并重试。';
-
-  @override
-  String get ok => '确定';
 
   @override
   String get result => '扫描结果';
@@ -187,6 +175,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get import_warning => '此操作会覆盖当前数据，且仅支持VerifyMe导出的文件，是否继续？';
+
+  @override
+  String get general => '通用';
+
+  @override
+  String get data => '数据';
+
+  @override
+  String get details => '详情';
 }
 
 /// The translations for Chinese, as used in Taiwan (`zh_TW`).
@@ -242,15 +239,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get are_you_sure => '您確定要刪除資料嗎？刪除後無法恢復。';
 
   @override
-  String get cancel => '取消';
-
-  @override
-  String get delete => '刪除';
-
-  @override
-  String get save => '儲存';
-
-  @override
   String get edit => '編輯';
 
   @override
@@ -279,9 +267,6 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get failed_to_add => '新增失敗，請檢查參數並重試。';
-
-  @override
-  String get ok => '確定';
 
   @override
   String get result => '掃描結果';
@@ -372,4 +357,13 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get import_warning => '此操作會覆蓋當前數據，且只支持VerifyMe導出的文件，是否繼續？';
+
+  @override
+  String get general => '一般';
+
+  @override
+  String get data => '數據';
+
+  @override
+  String get details => '詳情';
 }

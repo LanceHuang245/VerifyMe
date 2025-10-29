@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:get/get.dart';
+import 'package:verifyme/utils/generate/controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:webdav_client/webdav_client.dart';
 import 'package:verifyme/utils/notify.dart';
 import 'package:verifyme/l10n/generated/localizations.dart';
@@ -14,7 +16,7 @@ class WebDavSettingsPage extends StatefulWidget {
 
 class _WebDavSettingsPageState extends State<WebDavSettingsPage> {
   final _formKey = GlobalKey<FormState>();
-  final _box = GetStorage();
+  final _secureStorage = const FlutterSecureStorage();
 
   late TextEditingController _urlController;
   late TextEditingController _userController;
@@ -26,14 +28,19 @@ class _WebDavSettingsPageState extends State<WebDavSettingsPage> {
   @override
   void initState() {
     super.initState();
-    _urlController = TextEditingController(text: _box.read('webdav_url') ?? '');
-    _userController =
-        TextEditingController(text: _box.read('webdav_user') ?? '');
-    _passController =
-        TextEditingController(text: _box.read('webdav_pass') ?? '');
+    _urlController = TextEditingController();
+    _userController = TextEditingController();
+    _passController = TextEditingController();
+    _loadSettings();
     _urlController.addListener(_onFormChanged);
     _userController.addListener(_onFormChanged);
     _passController.addListener(_onFormChanged);
+  }
+
+  Future<void> _loadSettings() async {
+    _urlController.text = await _secureStorage.read(key: 'webdav_url') ?? '';
+    _userController.text = await _secureStorage.read(key: 'webdav_user') ?? '';
+    _passController.text = await _secureStorage.read(key: 'webdav_pass') ?? '';
     _onFormChanged();
   }
 
@@ -63,9 +70,11 @@ class _WebDavSettingsPageState extends State<WebDavSettingsPage> {
       );
 
   Future<void> _saveSettings() async {
-    _box.write('webdav_url', _urlController.text.trim());
-    _box.write('webdav_user', _userController.text.trim());
-    _box.write('webdav_pass', _passController.text);
+    await _secureStorage.write(
+        key: 'webdav_url', value: _urlController.text.trim());
+    await _secureStorage.write(
+        key: 'webdav_user', value: _userController.text.trim());
+    await _secureStorage.write(key: 'webdav_pass', value: _passController.text);
   }
 
   Future<void> _runWithLoading(Future<void> Function() action) async {
@@ -73,7 +82,9 @@ class _WebDavSettingsPageState extends State<WebDavSettingsPage> {
     try {
       await action();
     } finally {
-      setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -92,8 +103,9 @@ class _WebDavSettingsPageState extends State<WebDavSettingsPage> {
     await _saveSettings();
     final loc = AppLocalizations.of(context);
     try {
-      final data = _box.read('totpList');
-      if (data == null) {
+      final controller = Get.find<GenerateController>();
+      final data = controller.totpList.toList();
+      if (data.isEmpty) {
         showNotification(loc.webdav_no_data);
         return;
       }
@@ -113,7 +125,12 @@ class _WebDavSettingsPageState extends State<WebDavSettingsPage> {
     try {
       final bytes = await client.read('/totp_list.json');
       final jsonData = jsonDecode(utf8.decode(bytes));
-      _box.write('totpList', jsonData);
+      final controller = Get.find<GenerateController>();
+      final List<dynamic> jsonList = jsonData;
+      controller.totpList.assignAll(
+        jsonList.map((e) => Map<String, dynamic>.from(e)).toList(),
+      );
+      await controller.saveList();
       showNotification(
           '${loc.webdav_restore_success}, ${loc.webdav_reboot_tip}');
     } catch (e) {

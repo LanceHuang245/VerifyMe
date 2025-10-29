@@ -26,7 +26,7 @@ class EditForm extends StatefulWidget {
 }
 
 class EditFormState extends State<EditForm> {
-  final GenerateController gController = Get.put(GenerateController());
+  final GenerateController gController = Get.find<GenerateController>();
 
   late TextEditingController accountNameController;
   late TextEditingController secretController;
@@ -66,160 +66,161 @@ class EditFormState extends State<EditForm> {
         content: Text(loc.failed_to_add),
         actions: <Widget>[
           TextButton(
-            child: Text(loc.ok),
-            onPressed: () {
-              Get.back();
-            },
+            child: Text(MaterialLocalizations.of(context).okButtonLabel),
+            onPressed: () => Get.back(),
           ),
         ],
       ),
     );
   }
 
+  Future<void> _saveForm() async {
+    final nameText = accountNameController.text.trim();
+    final secretText = secretController.text.replaceAll(" ", "").toUpperCase();
+    final lengthText = lengthController.text.trim();
+
+    if (nameText.isEmpty || secretText.isEmpty) {
+      _showErrorDialog();
+      return;
+    }
+
+    final success = await gController.add(
+      nameText,
+      secretText,
+      selectedAlgorithm,
+      lengthText,
+      selectedMode,
+      oldSecret: widget.isEdit ? widget.secret : null,
+    );
+
+    if (success) {
+      Get.back();
+    } else {
+      _showErrorDialog();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final inputBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(24),
+    );
 
     return Scaffold(
       appBar: AppBar(
-        title: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            widget.isEdit ? loc.edit : loc.input,
-          ),
-        ),
+        title: Text(widget.isEdit ? loc.edit : loc.input),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            DropdownButtonFormField<String>(
-              borderRadius: const BorderRadius.all(Radius.circular(15)),
-              value: selectedMode,
-              items: modes.map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (newValue) {
-                if (newValue != null) {
-                  setState(() {
-                    selectedMode = newValue;
-                  });
-                }
-              },
-              dropdownColor: Theme.of(context).colorScheme.onSecondary,
-              decoration: InputDecoration(
-                labelText: loc.mode,
-                border: const OutlineInputBorder(),
-              ),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        children: [
+          _buildGroupTitle(loc.mode, theme),
+          DropdownButtonFormField<String>(
+            borderRadius: const BorderRadius.all(Radius.circular(24)),
+            value: selectedMode,
+            items: modes.map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: (newValue) {
+              if (newValue != null) {
+                setState(() {
+                  selectedMode = newValue;
+                });
+              }
+            },
+            decoration: InputDecoration(
+              border: inputBorder,
             ),
-            const SizedBox(height: 25),
-            TextField(
-              controller: accountNameController,
-              decoration: InputDecoration(
-                labelText: loc.account,
-                border: const OutlineInputBorder(),
-              ),
+          ),
+          const SizedBox(height: 16),
+          _buildGroupTitle(loc.details, theme),
+          TextFormField(
+            controller: accountNameController,
+            decoration: InputDecoration(
+              labelText: loc.account,
+              border: inputBorder,
             ),
-            const SizedBox(height: 25),
-            TextField(
-              controller: secretController,
-              decoration: InputDecoration(
-                labelText: loc.secret,
-                border: const OutlineInputBorder(),
-              ),
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: secretController,
+            decoration: InputDecoration(
+              labelText: loc.secret,
+              border: inputBorder,
             ),
-            const SizedBox(height: 25),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Text(
-                loc.options,
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    borderRadius: const BorderRadius.all(Radius.circular(15)),
-                    value: selectedAlgorithm,
-                    items: algorithms.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          selectedAlgorithm = newValue;
-                        });
-                      }
-                    },
-                    dropdownColor: Theme.of(context).colorScheme.onSecondary,
-                    decoration: InputDecoration(
-                      labelText: loc.algorithm,
-                      border: const OutlineInputBorder(),
-                    ),
+          ),
+          const SizedBox(height: 16),
+          _buildGroupTitle(loc.options, theme),
+          Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  borderRadius: const BorderRadius.all(Radius.circular(24)),
+                  value: selectedAlgorithm,
+                  items: algorithms.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        selectedAlgorithm = newValue;
+                      });
+                    }
+                  },
+                  decoration: InputDecoration(
+                    labelText: loc.algorithm,
+                    border: inputBorder,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextField(
-                    controller: lengthController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: loc.length,
-                      border: const OutlineInputBorder(),
-                    ),
+              ),
+              const SizedBox(width: 16),
+              SizedBox(
+                width: 100,
+                child: TextFormField(
+                  controller: lengthController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: loc.length,
+                    border: inputBorder,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                final nameText = accountNameController.text.trim();
-                final secretText =
-                    secretController.text.replaceAll(" ", "").toUpperCase();
-                final lengthText = lengthController.text.trim();
-                if (nameText.isEmpty || secretText.isEmpty) {
-                  _showErrorDialog();
-                  return;
-                }
-                final success = gController.add(
-                  nameText,
-                  secretText,
-                  selectedAlgorithm,
-                  lengthText,
-                  selectedMode,
-                  oldSecret: widget.isEdit ? widget.secret : null,
-                );
-                if (success) {
-                  Get.back();
-                } else {
-                  _showErrorDialog();
-                  return;
-                }
-              },
-              style: ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(
-                  Theme.of(context).colorScheme.primary,
-                ),
-                foregroundColor: WidgetStatePropertyAll(
-                  Theme.of(context).colorScheme.onPrimary,
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: _saveForm,
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
                 ),
               ),
-              child: Text(loc.save),
+              child: Text(MaterialLocalizations.of(context).saveButtonLabel),
             ),
-          ],
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupTitle(String title, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+      child: Text(
+        title,
+        style: theme.textTheme.titleSmall?.copyWith(
+          color: theme.colorScheme.primary,
         ),
       ),
     );

@@ -16,9 +16,6 @@
   "import_json": "从JSON导入",
   "confirm": "确认",
   "are_you_sure": "您确定要删除数据吗？删除后无法恢复。",
-  "cancel": "取消",
-  "delete": "删除",
-  "save": "保存",
   "edit": "编辑",
   "input": "输入",
   "mode": "加密方法",
@@ -29,7 +26,6 @@
   "length": "生成长度",
   "error": "错误",
   "failed_to_add": "添加失败，请检查参数并重试。",
-  "ok": "确定",
   "result": "扫描结果",
   "issuer": "供应商",
   "no_storage_permission": "无存储权限，请检查应用权限设置",
@@ -59,5 +55,8 @@
   "webdav_input_address": "请输入WebDAV地址",
   "webdav_reboot_tip": "请重启App",
   "add": "添加",
-  "import_warning": "此操作会覆盖当前数据，且仅支持VerifyMe导出的文件，是否继续？"
+  "import_warning": "此操作会覆盖当前数据，且仅支持VerifyMe导出的文件，是否继续？",
+  "general": "通用",
+  "data": "数据",
+  "details": "详情"
 }

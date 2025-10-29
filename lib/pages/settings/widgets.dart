@@ -31,7 +31,7 @@ void showColorPickerDialog(
         ),
         actions: <Widget>[
           TextButton(
-            child: Text(AppLocalizations.of(context).cancel),
+            child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
             onPressed: () {
               Get.back();
             },
@@ -43,7 +43,7 @@ void showColorPickerDialog(
               foregroundColor: WidgetStatePropertyAll(
                   Theme.of(context).colorScheme.onPrimary),
             ),
-            child: Text(AppLocalizations.of(context).ok),
+            child: Text(MaterialLocalizations.of(context).okButtonLabel),
             onPressed: () {
               onColorSelected(pickerColor);
               Get.back();

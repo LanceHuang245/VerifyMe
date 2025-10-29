@@ -16,9 +16,6 @@
   "import_json": "Import from JSON",
   "confirm": "Confirm",
   "are_you_sure": "Are you sure you want to delete the data? It is not recoverable after deletion.",
-  "cancel": "Cancel",
-  "delete": "Delete",
-  "save": "Save",
   "edit": "Edit",
   "input": "Input",
   "mode": "Mode",
@@ -29,7 +26,6 @@
   "length": "Length",
   "error": "Error",
   "failed_to_add": "Failed to add. Please check the parameters and try again.",
-  "ok": "OK",
   "result": "Result",
   "issuer": "Issuer",
   "no_storage_permission": "No storage permission",
@@ -59,5 +55,8 @@
   "webdav_input_address": "Please enter the WebDAV address",
   "webdav_reboot_tip": "Restart the app",
   "add": "Add",
-  "import_warning": "This operation will overwrite the current data and only supports files exported by VerifyMe. Do you want to continue?"
+  "import_warning": "This operation will overwrite the current data and only supports files exported by VerifyMe. Do you want to continue?",
+  "general": "General",
+  "data": "Data",
+  "details": "Details"
 }

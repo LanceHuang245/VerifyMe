@@ -16,9 +16,6 @@
   "import_json": "Aus JSON importieren",
   "confirm": "Bestätigen",
   "are_you_sure": "Daten wirklich löschen? Dies kann nicht rückgängig gemacht werden.",
-  "cancel": "Abbrechen",
-  "delete": "Löschen",
-  "save": "Speichern",
   "edit": "Bearbeiten",
   "input": "Eingabe",
   "mode": "Verschlüsselungsmethode",
@@ -29,7 +26,6 @@
   "length": "Generierungslänge",
   "error": "Fehler",
   "failed_to_add": "Hinzufügen fehlgeschlagen. Bitte Parameter prüfen und erneut versuchen.",
-  "ok": "OK",
   "result": "Scan-Ergebnis",
   "issuer": "Anbieter",
   "no_storage_permission": "Keine Speicherberechtigung. Bitte App-Berechtigungen prüfen",
@@ -59,5 +55,8 @@
   "webdav_input_address": "Bitte geben Sie die WebDAV Adresse ein",
   "webdav_reboot_tip": "App neu starten",
   "add": "Hinzufügen",
-  "import_warning": "Dieser Vorgang überschreibt die aktuellen Daten und unterstützt nur von VerifyMe exportierte Dateien. Möchten Sie fortfahren?"
+  "import_warning": "Dieser Vorgang überschreibt die aktuellen Daten und unterstützt nur von VerifyMe exportierte Dateien. Möchten Sie fortfahren?",
+  "general": "Allgemein",
+  "data": "Daten",
+  "details": "Details"
 }

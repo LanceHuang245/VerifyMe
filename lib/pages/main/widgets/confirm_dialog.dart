@@ -21,7 +21,7 @@ class DeleteConfirmationDialog extends StatelessWidget {
       content: Text(title),
       actions: <Widget>[
         TextButton(
-          child: Text(loc.cancel),
+          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
           onPressed: () {
             Get.back();
           },
@@ -37,7 +37,7 @@ class DeleteConfirmationDialog extends StatelessWidget {
             foregroundColor:
                 WidgetStatePropertyAll(Theme.of(context).colorScheme.onPrimary),
           ),
-          child: Text(loc.delete),
+          child: Text(MaterialLocalizations.of(context).okButtonLabel),
         ),
       ],
     );
